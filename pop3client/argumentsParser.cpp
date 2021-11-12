@@ -6,7 +6,7 @@ int argumentParse(int argc, char **argv, string& server, string& port, string& c
 
     // Options parser
     int opt;
-    while((opt = getopt(argc, argv, "p:TSc:C:dna:o:")) != -1) {
+    while((opt = getopt(argc, argv, "p:TSc:C:dna:o:h")) != -1) {
         switch (opt)
         {
             case 'p':
@@ -39,6 +39,9 @@ int argumentParse(int argc, char **argv, string& server, string& port, string& c
             case 'o':
                 outdir = optarg;
                 break;
+            case 'h':
+                helpMsg(argv[0]);
+                exit(0);
             case '?':
                 if (optopt == 'p' || optopt == 'c' ||optopt == 'C' ||optopt == 'a' ||optopt == 'o')
                     fprintf (stderr, "Option -%c requires an argument.\n", optopt);
@@ -46,8 +49,10 @@ int argumentParse(int argc, char **argv, string& server, string& port, string& c
                     fprintf (stderr, "Unknown option `-%c'.\n", optopt);
                 else
                     fprintf (stderr, "Unknown option character `\\x%x'.\n", optopt);
+                usageMsg(argv[0]);
                 return -1;    
             default:
+                usageMsg(argv[0]);
                 return -1;
         }
     }
@@ -58,6 +63,7 @@ int argumentParse(int argc, char **argv, string& server, string& port, string& c
             server = argv[index];
         } else {
             fprintf(stderr, "Invalid argument -%s.\n",argv[index]);
+            usageMsg(argv[0]);
             return -1;
         }
     }
@@ -87,6 +93,9 @@ int argumentParse(int argc, char **argv, string& server, string& port, string& c
     if (COMPARE_FLAGS(flags, ENCRYPTION_FLAG_T) && COMPARE_FLAGS(flags, ENCRYPTION_FLAG_S)) {
         fprintf(stderr, "Invalid arguments! Options -T & -S cannot be specified at the same time.\n");
         notValid = true;
+    }
+    if (notValid) {
+        usageMsg(argv[0]);
     }
     
     return (!notValid) ? flags : -1;

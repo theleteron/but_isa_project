@@ -7,6 +7,8 @@
 
 using namespace std;
 
+#include "help.hpp"
+
 // Flags
 #define COMPARE_FLAGS(flags, flagConst) ((flags & flagConst) == flagConst)      
 #define PORT_SPECIFIED                  (1 << 0)
@@ -18,7 +20,7 @@ using namespace std;
 #define PULL_ONLY_NEW_MESSAGES          (1 << 6)
 
 // Defaults
-#define UNENCRYPTED_PORT                 110
+#define UNENCRYPTED_PORT                110
 #define ENCRYPTED_PORT                  995
 
 int argumentParse(int argc, char **argv, string& server, string& port, string& certfile, string& certaddr, string& authfile, string& outdir);

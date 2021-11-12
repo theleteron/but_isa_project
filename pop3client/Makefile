@@ -17,7 +17,7 @@ $(TARGET): main.o argumentsParser.o help.o returnCodes.hpp
 main.o: main.cpp argumentsParser.hpp
 	$(CC) $(CFLAGS) -c main.cpp
 
-argumentsParser.o: argumentsParser.cpp argumentsParser.hpp
+argumentsParser.o: argumentsParser.cpp argumentsParser.hpp help.hpp
 	$(CC) $(CFLAGS) -c argumentsParser.cpp
 
 help.o: help.cpp help.hpp
