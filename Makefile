@@ -7,30 +7,49 @@ CXXFLAGSDEBUG = -Wall -Werror -g -DDEBUG
 CFLAGS = $(CXXFLAGSDEBUG)
 
 # Builds
+DIRS = build build/bin
+MKDIR_P = mkdir -p
+RM_RF = rm -r
+MOVE = mv
+
 TARGET = popcl
+SRC = pop3client/
+OBJS_DIR = build/bin/
+EXEC_DIR = build/
 
-all: $(TARGET)
+OBJECTS = main.o argumentParser.o pop3.o connection.o fileManipulator.o help.o
 
-$(TARGET): main.o argumentParser.o pop3.o connection.o fileManipulator.o help.o pop3client/returnCodes.hpp
+all: directory $(TARGET) moveToBuild
+
+directory: $(DIRS)
+
+moveToBuild: 
+	mv *.o $(OBJS_DIR)
+	mv $(TARGET) $(EXEC_DIR)
+
+$(DIRS):
+	$(MKDIR_P) $(DIRS)
+
+$(TARGET): $(OBJECTS) $(SRC)returnCodes.hpp
 	$(CC) $(CFLAGS) -o $(TARGET) main.o argumentParser.o pop3.o connection.o fileManipulator.o help.o
 
-main.o: main.cpp pop3client/argumentParser.hpp pop3client/pop3.hpp pop3client/returnCodes.hpp
+main.o: main.cpp $(SRC)argumentParser.hpp $(SRC)pop3.hpp $(SRC)returnCodes.hpp
 	$(CC) $(CFLAGS) -c main.cpp
 
-argumentParser.o: pop3client/argumentParser.cpp pop3client/argumentParser.hpp pop3client/help.hpp
-	$(CC) $(CFLAGS) -c pop3client/argumentParser.cpp
+argumentParser.o: $(SRC)argumentParser.cpp $(SRC)argumentParser.hpp $(SRC)help.hpp
+	$(CC) $(CFLAGS) -c $(SRC)argumentParser.cpp
 
-pop3.o: pop3client/pop3.cpp pop3client/argumentParser.hpp pop3client/connection.hpp pop3client/fileManipulator.hpp
-	$(CC) $(CFLAGS) -c pop3client/pop3.cpp
+pop3.o: $(SRC)pop3.cpp $(SRC)argumentParser.hpp $(SRC)connection.hpp $(SRC)fileManipulator.hpp
+	$(CC) $(CFLAGS) -c $(SRC)pop3.cpp
 
-connection.o: pop3client/connection.cpp pop3client/help.hpp pop3client/returnCodes.hpp
-	$(CC) $(CFLAGS) -c pop3client/connection.cpp
+connection.o: $(SRC)connection.cpp $(SRC)help.hpp $(SRC)returnCodes.hpp
+	$(CC) $(CFLAGS) -c $(SRC)connection.cpp
 
-fileManipulator.o: pop3client/fileManipulator.cpp pop3client/help.hpp pop3client/returnCodes.hpp
-	$(CC) $(CFLAGS) -c pop3client/fileManipulator.cpp
+fileManipulator.o: $(SRC)fileManipulator.cpp $(SRC)help.hpp $(SRC)returnCodes.hpp
+	$(CC) $(CFLAGS) -c $(SRC)fileManipulator.cpp
 
-help.o: pop3client/help.cpp pop3client/help.hpp
-	$(CC) $(CFLAGS) -c pop3client/help.cpp
+help.o: $(SRC)help.cpp $(SRC)help.hpp
+	$(CC) $(CFLAGS) -c $(SRC)help.cpp
 
 clean:
-	$(RM) $(TARGET) *.o
+	$(RM_RF) $(EXEC_DIR)
