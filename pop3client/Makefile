@@ -11,14 +11,14 @@ TARGET = popcl
 
 all: $(TARGET)
 
-$(TARGET): main.o argumentsParser.o help.o returnCodes.hpp
-	$(CC) $(CFLAGS) -o $(TARGET) main.o argumentsParser.o help.o
+$(TARGET): main.o argumentParser.o help.o returnCodes.hpp
+	$(CC) $(CFLAGS) -o $(TARGET) main.o argumentParser.o help.o
 
-main.o: main.cpp argumentsParser.hpp
+main.o: main.cpp argumentParser.hpp
 	$(CC) $(CFLAGS) -c main.cpp
 
-argumentsParser.o: argumentsParser.cpp argumentsParser.hpp help.hpp
-	$(CC) $(CFLAGS) -c argumentsParser.cpp
+argumentParser.o: argumentParser.cpp argumentParser.hpp help.hpp
+	$(CC) $(CFLAGS) -c argumentParser.cpp
 
 help.o: help.cpp help.hpp
 	$(CC) $(CFLAGS) -c help.cpp
