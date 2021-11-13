@@ -14,3 +14,4 @@
 
 #include <iostream>
 
+Connection::Connection() {}

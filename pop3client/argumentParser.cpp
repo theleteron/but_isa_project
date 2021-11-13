@@ -112,26 +112,26 @@ bool ArgumentParser::validate() {
 
     // Check directories & files received
     if (getCertDirFlag() && !isDirectory(certaddr)) {
-        fprintf(stderr, "[ERROR][FILDIR] %s is not a valid directory!\n", certaddr.c_str());
+        fprintf(stderr, "[ERROR][FILDIR] %s is not a valid directory!\n", (certaddr.empty()) ? "<missing>" : certaddr.c_str());
         notValid = true;
     }
     if (getCertfileFlag() && !isFile(certfile)) {
-        fprintf(stderr, "[ERROR][FILDIR] %s is not a valid file!\n", certaddr.c_str());
+        fprintf(stderr, "[ERROR][FILDIR] %s is not a valid file!\n", (certfile.empty()) ? "<missing>" : certfile.c_str());
         notValid = true;
     }
     if (!isFile(authfile)) {
-        fprintf(stderr, "[ERROR][FILDIR] %s is not a valid file!\n", authfile.c_str());
+        fprintf(stderr, "[ERROR][FILDIR] %s is not a valid file!\n", (authfile.empty()) ? "<missing>" : authfile.c_str());
         notValid = true;
     }
     if (!isDirectory(outdir)) {
         if(!createOutdir()) {
-            fprintf(stderr, "[ERROR][FILDIR] %s is not a valid direcotry and program was unable to create it!\n", outdir.c_str());
+            fprintf(stderr, "[ERROR][FILDIR] %s is not a valid direcotry and program was unable to create it!\n", (outdir.empty()) ? "<missing>" : outdir.c_str());
             notValid = true;
         }
     }
 
     if (!loadCredentials()) {
-        fprintf(stderr, "[ERROR][AUTHFIL] Program was unable to load login credentials from %s!\n", authfile.c_str());
+        fprintf(stderr, "[ERROR][AUTHFIL] Program was unable to load login credentials from %s!\n", (authfile.empty()) ? "<missing>" : authfile.c_str());
     }
 
     if (notValid) {

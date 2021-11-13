@@ -13,7 +13,7 @@
 POP3::POP3() {}
 
 bool POP3::run() {
-
+    return true;
 }
 
 void POP3::passArgs(ArgumentParser argArgs) {
