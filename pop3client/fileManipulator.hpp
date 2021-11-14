@@ -20,7 +20,7 @@ using namespace std;
 
 class FileManipulator {
     private:
-        string outdir;
+        string outdir;  // Output directory - local mail storage
 
         /**
          * @brief Get the Message-ID to use as filename
@@ -36,8 +36,21 @@ class FileManipulator {
          */
         FileManipulator();
 
+        /**
+         * @brief Set the Outdir
+         *  
+         * @param directory output directory
+         */
         void setOutdir(string directory);
 
+        /**
+         * @brief Save message to output direcotry
+         * Check if file already exists & decide if it should be rewritten or skipped based on -n flag
+         * @param message Message received from the server
+         * @param onlyNew Flag -n
+         * @return true Message saved
+         * @return false Message skipped or saving failed
+         */
         bool saveMessage(string message, bool onlyNew);
 
 };

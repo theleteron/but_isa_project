@@ -1,3 +1,13 @@
+/**
+ * @file help.hpp
+ * @author Roman Janiczek - xjanic25(at)vutbr.cz
+ * @brief Usage, help & debug macros
+ * @version 0.1
+ * @date 2021-11-14
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
 #ifndef HELP_H
 #define HELP_H
 
@@ -17,7 +27,17 @@ using namespace std;
 #define TRACE_LOG(msg, args...)
 #endif
 
+/**
+ * @brief How to use program message outputed to stderr
+ * 
+ * @param progName name of the program
+ */
 void usageMsg(string progName);
+/**
+ * @brief Help printout (to stdout) if program is called with -h
+ * 
+ * @param progName name of the program
+ */
 void helpMsg(string progName);
 
 #endif /* HELP_H */

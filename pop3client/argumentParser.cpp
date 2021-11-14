@@ -47,6 +47,7 @@ bool ArgumentParser::parse(int argc, char **argv) {
                 break;
             case 'd':
                 setDeleteMsgsFlag();
+                break;
             case 'n':
                 setOnlyNewMsgsFlag();
                 break;
@@ -112,14 +113,17 @@ bool ArgumentParser::validate() {
 
     // Check directories & files received
     if (getCertDirFlag() && !isDirectory(certaddr)) {
+        fprintf(stdout, "It's not possible to verify identity of %s with provided certificate directory - %s!\n", server.c_str(), (certaddr.empty()) ? "<missing>" : certaddr.c_str());
         fprintf(stderr, "[ERROR][FILDIR] %s is not a valid directory!\n", (certaddr.empty()) ? "<missing>" : certaddr.c_str());
         notValid = true;
     }
     if (getCertfileFlag() && !isFile(certfile)) {
+        fprintf(stdout, "It's not possible to verify identity of %s with provided certificate file - %s!\n", server.c_str(), (certfile.empty()) ? "<missing>" : certfile.c_str());
         fprintf(stderr, "[ERROR][FILDIR] %s is not a valid file!\n", (certfile.empty()) ? "<missing>" : certfile.c_str());
         notValid = true;
     }
     if (!isFile(authfile)) {
+        fprintf(stdout, "It's not possible to get authentication details from %s because it's not a valid file!\n", (authfile.empty()) ? "<missing>" : authfile.c_str());
         fprintf(stderr, "[ERROR][FILDIR] %s is not a valid file!\n", (authfile.empty()) ? "<missing>" : authfile.c_str());
         notValid = true;
     }
@@ -129,11 +133,13 @@ bool ArgumentParser::validate() {
             notValid = true;
         }
     }
-
-    if (!loadCredentials()) {
-        fprintf(stderr, "[ERROR][AUTHFIL] Program was unable to load login credentials from %s!\n", (authfile.empty()) ? "<missing>" : authfile.c_str());
+    
+    // Try to parse authentication file
+    if (isFile(authfile) && !loadCredentials()) {
+        fprintf(stdout, "Authfile %s doesn't have a valid format!\n", (authfile.empty()) ? "<missing>" : authfile.c_str());
     }
 
+    // Send how-to-use line to stderr
     if (notValid) {
         usageMsg(progname);
     }
@@ -175,6 +181,10 @@ bool ArgumentParser::loadCredentials() {
 
     data.close();
 
+    if (loadedLines != 2) {
+        return false;
+    }
+
     return true;
 }
 
@@ -203,8 +213,8 @@ void ArgumentParser::setPort(string portArg) {
 }
 
 void ArgumentParser::setPortFlag() {
-    if ((flags & PORT_SPECIFIED) == PORT_SPECIFIED) {
-        fprintf(stderr, "Multiple -p arguments!\n");
+    if (COMPARE_FLAGS(flags, PORT_SPECIFIED)) {
+        fprintf(stderr, "[ERROR][ARGUMENT] Multiple -p arguments!\n");
         exit(ARGUMENT_PARSING_ERROR);
     }
     flags |= PORT_SPECIFIED;
@@ -219,7 +229,7 @@ void ArgumentParser::setCertfile(string certfileArg) {
 }
 
 void ArgumentParser::setCertfileFlag() {
-    if ((flags & CERTIFICATE_FILE_SPECIFIED) == CERTIFICATE_FILE_SPECIFIED) {
+    if (COMPARE_FLAGS(flags, CERTIFICATE_FILE_SPECIFIED)) {
         fprintf(stderr, "[ERROR][ARGUMENT] Multiple -c arguments!\n");
         exit(ARGUMENT_PARSING_ERROR);
     }
@@ -235,7 +245,7 @@ void ArgumentParser::setCertDir(string certaddrArg) {
 }
 
 void ArgumentParser::setCertDirFlag() {
-    if ((flags & CERTIFICATE_ADDR_SPECIFIED) == CERTIFICATE_ADDR_SPECIFIED) {
+    if (COMPARE_FLAGS(flags, CERTIFICATE_ADDR_SPECIFIED)) {
         fprintf(stderr, "[ERROR][ARGUMENT] Multiple -C arguments!\n");
         exit(ARGUMENT_PARSING_ERROR);
     }
@@ -259,7 +269,7 @@ void ArgumentParser::setOutputDir(string outdirArg) {
 }
 
 void ArgumentParser::setEncryptionFlagT() {
-    if ((flags & ENCRYPTION_FLAG_T) == ENCRYPTION_FLAG_T) {
+    if (COMPARE_FLAGS(flags, ENCRYPTION_FLAG_T)) {
         fprintf(stderr, "[ERROR][ARGUMENT] Multiple -T arguments!\n");
         exit(ARGUMENT_PARSING_ERROR);
     }
@@ -268,7 +278,7 @@ void ArgumentParser::setEncryptionFlagT() {
 }
 
 void ArgumentParser::setEncryptionFlagS() {
-    if ((flags & ENCRYPTION_FLAG_S) == ENCRYPTION_FLAG_S) {
+    if (COMPARE_FLAGS(flags, ENCRYPTION_FLAG_S)) {
         fprintf(stderr, "[ERROR][ARGUMENT] Multiple -S arguments!\n");
         exit(ARGUMENT_PARSING_ERROR);
     }
@@ -276,7 +286,7 @@ void ArgumentParser::setEncryptionFlagS() {
 }
 
 void ArgumentParser::setDeleteMsgsFlag() {
-    if ((flags & DELETE_MSGS_ON_SERVER) == DELETE_MSGS_ON_SERVER) {
+    if (COMPARE_FLAGS(flags, DELETE_MSGS_ON_SERVER)) {
         fprintf(stderr, "[ERROR][ARGUMENT] Multiple -d arguments!\n");
         exit(ARGUMENT_PARSING_ERROR);
     }
@@ -284,7 +294,7 @@ void ArgumentParser::setDeleteMsgsFlag() {
 }
 
 void ArgumentParser::setOnlyNewMsgsFlag() {
-    if ((flags & PULL_ONLY_NEW_MESSAGES) == PULL_ONLY_NEW_MESSAGES) {
+    if (COMPARE_FLAGS(flags, PULL_ONLY_NEW_MESSAGES)) {
         fprintf(stderr, "[ERROR][ARGUMENT] Multiple -n arguments!\n");
         exit(ARGUMENT_PARSING_ERROR);
     }
@@ -304,7 +314,7 @@ int ArgumentParser::getPort() {
 }
 
 bool ArgumentParser::getPortSpecifiedFlag() {
-    return ((flags & PORT_SPECIFIED) == PORT_SPECIFIED);
+    return COMPARE_FLAGS(flags, PORT_SPECIFIED);
 }
 
 string ArgumentParser::getCertfile() {
@@ -312,7 +322,7 @@ string ArgumentParser::getCertfile() {
 }
 
 bool ArgumentParser::getCertfileFlag() {
-    return ((flags & CERTIFICATE_FILE_SPECIFIED) == CERTIFICATE_FILE_SPECIFIED);
+    return COMPARE_FLAGS(flags, CERTIFICATE_FILE_SPECIFIED);
 }
 
 string ArgumentParser::getCertDir() {
@@ -320,7 +330,7 @@ string ArgumentParser::getCertDir() {
 }
 
 bool ArgumentParser::getCertDirFlag() {
-    return ((flags & CERTIFICATE_ADDR_SPECIFIED) == CERTIFICATE_ADDR_SPECIFIED);
+    return COMPARE_FLAGS(flags, CERTIFICATE_ADDR_SPECIFIED);
 }
 
 string ArgumentParser::getAuthfile() {
@@ -332,19 +342,19 @@ string ArgumentParser::getOutputDir() {
 }
 
 bool ArgumentParser::getEncryptionFlagT() {
-    return ((flags & ENCRYPTION_FLAG_T) == ENCRYPTION_FLAG_T);
+    return COMPARE_FLAGS(flags, ENCRYPTION_FLAG_T);
 }
 
 bool ArgumentParser::getEncryptionFlagS() {
-    return ((flags & ENCRYPTION_FLAG_S) == ENCRYPTION_FLAG_S);
+    return COMPARE_FLAGS(flags, ENCRYPTION_FLAG_S);
 }
 
 bool ArgumentParser::getDeleteMsgsFlag() {
-    return ((flags & DELETE_MSGS_ON_SERVER) == DELETE_MSGS_ON_SERVER);
+    return COMPARE_FLAGS(flags, DELETE_MSGS_ON_SERVER);
 }
 
 bool ArgumentParser::getOnlyNewMsgsFlag() {
-    return ((flags & PULL_ONLY_NEW_MESSAGES) == PULL_ONLY_NEW_MESSAGES);
+    return COMPARE_FLAGS(flags, PULL_ONLY_NEW_MESSAGES);
 }
 
 string ArgumentParser::getUsername() {

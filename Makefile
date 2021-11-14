@@ -4,7 +4,7 @@ CC = g++
 # Compiler flags
 CXXFLAGS  = -Wall -Werror
 CXXFLAGSDEBUG = -Wall -Werror -g -DDEBUG
-CFLAGS = $(CXXFLAGSDEBUG)
+CFLAGS = $(CXXFLAGS)
 
 # Builds
 DIRS = build build/bin

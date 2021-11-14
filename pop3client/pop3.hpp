@@ -17,9 +17,9 @@
 
 class POP3 {
     private:
-        ArgumentParser args;
-        Connection conn;
-        FileManipulator manip;
+        ArgumentParser args;        // Holds all arguments that were passed to the program
+        Connection conn;            // Holds connection with the server & related operations
+        FileManipulator manip;      // Helper responsible for file create&write
 
         // CONNECTION
 
@@ -31,6 +31,11 @@ class POP3 {
          * @brief Close connection to the server
          */
         void endConnection();
+        /**
+         * @brief UPDATE confirm & session end -> QUIT
+         * 
+         */
+        void quit();
 
         // AUTHENTICATION
 
@@ -54,6 +59,13 @@ class POP3 {
          * @return false Message retrieved and not saved or not retrieved at all
          */
         bool retrieveMessage(int id);
+        /**
+         * @brief Retrieves all messages from the server
+         * 
+         * @return true Proccess completed without error
+         * @return false Encountered error
+         */
+        bool retrieveAllMessages();
 
         //HELPERS
 

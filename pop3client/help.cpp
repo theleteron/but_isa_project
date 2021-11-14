@@ -1,11 +1,11 @@
 #include "help.hpp"
 
 void usageMsg(string progName) {
-    fprintf(stdout, "Usage: %s <server> [-p <port>] [-T|-S [-c <certfile> [-C <certaddr>]] [-d] [-n] -a <authfile> -o <outdir>\n", progName.c_str());
+    fprintf(stderr, "Usage: %s <server> [-p <port>] [-T|-S [-c <certfile> [-C <certaddr>]] [-d] [-n] -a <authfile> -o <outdir>\n", progName.c_str());
 }
 
 void helpMsg(string progName) {
-    usageMsg(progName);
+    fprintf(stdout, "Usage: %s <server> [-p <port>] [-T|-S [-c <certfile> [-C <certaddr>]] [-d] [-n] -a <authfile> -o <outdir>\n", progName.c_str());
     fprintf(stdout, "\nRequired arguments & options:\n");
     fprintf(stdout, "\t<server>\tIP address or domain name of requested POP3 server\n");
     fprintf(stdout, "\t-a <authfile>\tPath to the authetication file (file containing login credentials)\n");

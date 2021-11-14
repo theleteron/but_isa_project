@@ -1,3 +1,13 @@
+/**
+ * @file main.cpp
+ * @author Roman Janiczek - xjanic25(at)vutbr.cz
+ * @brief Main - connecting Args and POP3
+ * @version 0.1
+ * @date 2021-11-14
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
 // Basic
 #include <iostream>
 #include <string>
@@ -12,16 +22,21 @@ using namespace std;
 
 int main (int argc, char **argv)
 {
+    // Create arguments & parse them
     ArgumentParser args = ArgumentParser();
     if(!args.parse(argc, argv)) {
         exit(ARGUMENT_PARSING_ERROR);
     }
     
+    // Create POP3 client
     POP3 client = POP3();
     client.passArgs(args);
 
+    // Initiate program run
     if (client.run()) {
         return SUCCESS;
     }
+
+    // Unreachable as POP3::run() is always true
     return POP3_RUN_FAILED;
 }

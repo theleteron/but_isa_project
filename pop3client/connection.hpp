@@ -23,11 +23,15 @@ using namespace std;
 
 class Connection {
     private:
-        BIO *bio, *bioSec, *proSsl;
-        SSL_CTX *ctx;
-        SSL *ssl;
-        char buffer[1024];
+        BIO *bio, *bioSec, *proSsl;     // BIO objects - bioSec & proSsl used only with -S flag during session promotio to TLS
+        SSL_CTX *ctx;                   // SSL_CTX object - used only with -T | -S flag
+        SSL *ssl;                       // SSL object - used only with -T | -S flag
+        char buffer[1024];              // Buffer for read data
 
+        /**
+         * @brief Clear buffer before next read
+         * 
+         */
         void clearBuffer();
 
     public:

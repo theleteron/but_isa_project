@@ -24,10 +24,24 @@ void FileManipulator::setOutdir(string directory) {
 
 bool FileManipulator::saveMessage(string message, bool onlyNew) {
     if (outdir.empty()) {
-        fprintf(stderr, "[ERROR][OUTDIR] Outdir not specified.\n");
+        fprintf(stderr, "[ERROR][MESSAGE] Outdir not specified for FileManipulator.\n");
         return false;
     }
-    ofstream output(outdir + "/" + getMessageID(message));
+    // Full message path
+    string path = outdir + "/" + getMessageID(message);
+
+    // Check if file already exists & continue or return based on the -n flag
+    fstream stream;
+    stream.open(path);
+    if (!stream.fail()) {
+        stream.close();
+        if (onlyNew) {
+            return false;
+        }
+    }
+
+    // Create/Update file & fill it with message content
+    ofstream output(path);
     output << message;
     output.close();
 
@@ -40,7 +54,7 @@ string FileManipulator::getMessageID(string msg) {
     regex msgID("Message-ID: (.*)\r\n");
 
     if (!regex_search(msg, match, msgID)) {
-        fprintf(stderr, "[ERROR][MSG-ID] Message doesn't contain msgID.\n");
+        fprintf(stderr, "[ERROR][MESSAGE] Message doesn't contain msgID.\n");
         return "";
     }
     MID = match[1];

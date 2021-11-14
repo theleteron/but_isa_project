@@ -17,9 +17,16 @@
 POP3::POP3() {}
 
 bool POP3::run() {
+    // Initialiaze Connection & connect to server specified by args
     startConnection();
+    // Attempt to login using credentials specified by args (loaded from authfile)
     login();
-    retrieveMessage(2);
+    // Attempt to get messages - functionality depends on flags specified by args
+    retrieveAllMessages();
+    // Update POP3 and end connection
+    quit();
+    // Run is always ok -- failuers are handled by exit(RETURN_CODE) 
+    // TODO: consider rewrite to make use of C++ Throw
     return true;
 }
 
@@ -64,6 +71,30 @@ void POP3::endConnection() {
     } 
 }
 
+void POP3::quit() {
+    string quitCmd = "QUIT";
+    string response;
+    smatch match;
+    regex resOk("\\+OK (.*)\r\n");
+
+    
+    conn.write(quitCmd);
+    response = conn.read();
+    
+    if (!regex_search(response, match, resOk)) {
+        fprintf(stderr, "[ERROR][SESSION] QUIT command failed!\n");
+        endConnection();
+        return;
+    }
+    response.clear();
+
+    endConnection();
+    response = match[1];
+    TRACE_LOG("[INFO] %s\n", response.c_str())
+
+    return;
+}
+
 // AUTHENTICATION
 
 void POP3::login() {
@@ -76,7 +107,7 @@ void POP3::login() {
     conn.write(usernameCmd);
     response = conn.read();
     if (!regex_search(response, match, resOk)) {
-        fprintf(stderr, "[INFO] Invalid username!\n");
+        fprintf(stdout, "Could not login with provided username!\n");
         loginAbort();
         return;
     }
@@ -85,13 +116,13 @@ void POP3::login() {
     conn.write(passwordCmd);
     response = conn.read();
     if (!regex_search(response, match, resOk)) {
-        fprintf(stderr, "[INFO] Invalid password!\n");
+        fprintf(stdout, "Could not login with provided password!\n");
         loginAbort();
         return;
     }
     response.clear();
 
-    fprintf(stderr, "[INFO] Login successfull!\n");
+    TRACE_LOG("[INFO] Login successfull!\n")
 
     return;
 }
@@ -107,16 +138,15 @@ void POP3::loginAbort() {
     response = conn.read();
     
     if (!regex_search(response, match, resOk)) {
-        fprintf(stderr, "[INFO] Login Abort failed!\n");
-        /* TODO close connection */
+        fprintf(stderr, "[ERROR][SESSION] QUIT command failed during login abort!\n");
+        endConnection();
         return;
     }
     response.clear();
 
-    
-    /* TODO close connection */
+    endConnection();
     response = match[1];
-    fprintf(stderr, "[INFO] %s\n", response.c_str());
+    TRACE_LOG("[INFO] %s\n", response.c_str())
 
     return;
 }
@@ -134,7 +164,7 @@ bool POP3::retrieveMessage(int id) {
     // Confirm that download request was accepted
     response = conn.read();
     if (!regex_search(response, resOk)) {
-        fprintf(stderr, "[ERROR][MSG] Message with number %d not retrieved!\n", id);
+        fprintf(stderr, "[ERROR][MESSAGE] Message with number %d not retrieved!\n", id);
         return false;
     }
 
@@ -145,17 +175,40 @@ bool POP3::retrieveMessage(int id) {
     } while(!endOfMsg(message));
 
     // Save message
-    manip.saveMessage(message, args.getOnlyNewMsgsFlag());
+    if (!manip.saveMessage(message, args.getOnlyNewMsgsFlag())) {
+        return false;
+    }
 
     // Delete message if flag -d
     if (args.getDeleteMsgsFlag()) {
         string deleCmd = "DELE " + to_string(id);
+        conn.write(deleCmd);
         response = conn.read();
         if (!regex_search(response, match, resOk)) {
             string res = match[1];
-            fprintf(stderr, "[ERROR][MSG] Delete fail! %s\n", res.c_str());
+            fprintf(stderr, "[ERROR][MESSAGE] Delete fail! %s\n", res.c_str());
             return false;
         }
+    }
+
+    return true;
+}
+
+bool POP3::retrieveAllMessages() {
+    int numMsgs = getNumberOfMsgs();
+    int downloaded = 0;
+
+    for(int i = 1; i <= numMsgs; i++) {
+        if (retrieveMessage(i)) {
+            downloaded++;
+        }
+    }
+
+    string correctForm = (downloaded == 1) ? "message" : "messages";
+    if (args.getOnlyNewMsgsFlag()) {
+        fprintf(stdout, "Downloaded %d new %s.\n", downloaded, correctForm.c_str());
+    } else {
+        fprintf(stdout, "Downloaded %d %s.\n", downloaded, correctForm.c_str());
     }
 
     return true;
