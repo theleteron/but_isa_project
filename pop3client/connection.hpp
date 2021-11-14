@@ -23,7 +23,9 @@ using namespace std;
 
 class Connection {
     private:
-        BIO *bio;
+        BIO *bio, *bioSec, *proSsl;
+        SSL_CTX *ctx;
+        SSL *ssl;
         char buffer[1024];
 
         void clearBuffer();
@@ -43,7 +45,6 @@ class Connection {
          * @return false Connection failed to open
          */
         bool openConnection(string hostname, int port);
-
         /**
          * @brief Opens connection to the server on specified hostname and port (secured)
          * Ex. Used for comunication over secured port 995
@@ -52,17 +53,39 @@ class Connection {
          * @return true Connection opened
          * @return false Connection failed to open
          */
-        bool openConnectionTLS(string hostname, int port);
-
+        bool openConnectionTLS(string hostname, int port, string certfile, string certaddr);
         /**
          * @brief Opens connection to the server on specified hostname and port (secured using STLS)
          * Ex. Used for comunication over unsecured port 110
+         * @copyright https://github.com/openssl/openssl/blob/OpenSSL_1_1_0g/ssl/bio_ssl.c#L464
          * @param hostname Domain or IP
          * @param port Port for POP3
          * @return true Connection opened
          * @return false Connection failed to open
          */
-        bool openConnectionSTLS(string hostname, int port);
+        bool openConnectionSTLS(string hostname, int port, string certfile, string certaddr);
+
+        /**
+         * @brief Close connection to the server
+         * 
+         * @return true Connection closed
+         * @return false Connection failed to close
+         */
+        bool closeConnection();
+        /**
+         * @brief Close secure connection to the server
+         * 
+         * @return true Connection closed
+         * @return false Connection failed to close
+         */
+        bool closeConnectionTLS();
+        /**
+         * @brief Close secure connection (using STLS) to the server
+         * 
+         * @return true Connection closed
+         * @return false Connection failed to close
+         */
+        bool closeConnectionSTLS();
         
         /**
          * @brief Read data from the server

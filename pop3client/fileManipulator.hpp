@@ -12,11 +12,23 @@
 #ifndef FILEMANIPULATOR_H
 #define FILEMANIPULATOR_H
 
+#include "openssl/md5.h"
+
 #include <string>
-#include <fstream>
+
+using namespace std;
 
 class FileManipulator {
     private:
+        string outdir;
+
+        /**
+         * @brief Get the Message-ID to use as filename
+         * 
+         * @param msg Whole msg
+         * @return string Message-ID
+         */
+        string getMessageID(string msg);
 
     public:
         /**
@@ -24,6 +36,9 @@ class FileManipulator {
          */
         FileManipulator();
 
+        void setOutdir(string directory);
+
+        bool saveMessage(string message, bool onlyNew);
 
 };
 

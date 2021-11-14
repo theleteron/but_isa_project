@@ -26,7 +26,7 @@ directory: $(DIRS)
 
 moveToBuild: 
 	mv *.o $(OBJS_DIR)
-	mv $(TARGET) $(EXEC_DIR)
+	cp $(TARGET) $(EXEC_DIR)
 
 $(DIRS):
 	$(MKDIR_P) $(DIRS)
@@ -54,3 +54,4 @@ help.o: $(SRC)help.cpp $(SRC)help.hpp
 
 clean:
 	$(RM_RF) $(EXEC_DIR)
+	$(RM) $(TARGET)

@@ -19,10 +19,59 @@ class POP3 {
     private:
         ArgumentParser args;
         Connection conn;
+        FileManipulator manip;
 
-        void createConnection();
+        // CONNECTION
 
+        /**
+         * @brief Create a Connection objet and open connection to server specified by args 
+         */
+        void startConnection();
+        /**
+         * @brief Close connection to the server
+         */
+        void endConnection();
+
+        // AUTHENTICATION
+
+        /**
+         * @brief Use USER & PASS msgs to try to login to the server with args.username & args.password
+         */
         void login();
+        /**
+         * @brief Send QUIT msg in AUTHORIZATION phase & call close connection
+         * This is called in case of invalid username or password!
+         */
+        void loginAbort();
+
+        // MSG MANIPULATION
+
+        /**
+         * @brief Retrieves message from the server
+         * 
+         * @param id number of the msg
+         * @return true Message retrieved and saved
+         * @return false Message retrieved and not saved or not retrieved at all
+         */
+        bool retrieveMessage(int id);
+
+        //HELPERS
+
+        /**
+         * @brief Detect end of msg received from the server
+         * 
+         * @param msg Content of Connection::read()
+         * @return true End of msg found
+         * @return false End of msg not found
+         */
+        bool endOfMsg(const string msg);
+
+        /**
+         * @brief Get number of msgs availiable from STAT cmd
+         * 
+         * @return int Returns <number_of_msgs> from -> +OK <number_of_msgs> <size>
+         */
+        int getNumberOfMsgs();
 
     public:
         /**
