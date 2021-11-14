@@ -3,3 +3,4 @@ build/
 mails/
 .vscode/
 popcl
+*.tar
