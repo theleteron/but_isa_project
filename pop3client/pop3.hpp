@@ -20,6 +20,10 @@ class POP3 {
         ArgumentParser args;
         Connection conn;
 
+        void createConnection();
+
+        void login();
+
     public:
         /**
          * @brief Construct a new File Manipulator object 

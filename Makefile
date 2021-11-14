@@ -16,6 +16,7 @@ TARGET = popcl
 SRC = pop3client/
 OBJS_DIR = build/bin/
 EXEC_DIR = build/
+LIBS = -L/usr/lib/x86_64-linux-gnu/ -lcrypto -lssl
 
 OBJECTS = main.o argumentParser.o pop3.o connection.o fileManipulator.o help.o
 
@@ -31,7 +32,7 @@ $(DIRS):
 	$(MKDIR_P) $(DIRS)
 
 $(TARGET): $(OBJECTS) $(SRC)returnCodes.hpp
-	$(CC) $(CFLAGS) -o $(TARGET) main.o argumentParser.o pop3.o connection.o fileManipulator.o help.o
+	$(CC) $(CFLAGS) -o $(TARGET) main.o argumentParser.o pop3.o connection.o fileManipulator.o help.o $(LIBS)
 
 main.o: main.cpp $(SRC)argumentParser.hpp $(SRC)pop3.hpp $(SRC)returnCodes.hpp
 	$(CC) $(CFLAGS) -c main.cpp
@@ -39,13 +40,13 @@ main.o: main.cpp $(SRC)argumentParser.hpp $(SRC)pop3.hpp $(SRC)returnCodes.hpp
 argumentParser.o: $(SRC)argumentParser.cpp $(SRC)argumentParser.hpp $(SRC)help.hpp
 	$(CC) $(CFLAGS) -c $(SRC)argumentParser.cpp
 
-pop3.o: $(SRC)pop3.cpp $(SRC)argumentParser.hpp $(SRC)connection.hpp $(SRC)fileManipulator.hpp
+pop3.o: $(SRC)pop3.cpp $(SRC)pop3.hpp $(SRC)argumentParser.hpp $(SRC)connection.hpp $(SRC)fileManipulator.hpp $(SRC)returnCodes.hpp
 	$(CC) $(CFLAGS) -c $(SRC)pop3.cpp
 
-connection.o: $(SRC)connection.cpp $(SRC)help.hpp $(SRC)returnCodes.hpp
+connection.o: $(SRC)connection.cpp $(SRC)connection.hpp $(SRC)help.hpp $(SRC)returnCodes.hpp
 	$(CC) $(CFLAGS) -c $(SRC)connection.cpp
 
-fileManipulator.o: $(SRC)fileManipulator.cpp $(SRC)help.hpp $(SRC)returnCodes.hpp
+fileManipulator.o: $(SRC)fileManipulator.cpp $(SRC)fileManipulator.hpp $(SRC)help.hpp $(SRC)returnCodes.hpp
 	$(CC) $(CFLAGS) -c $(SRC)fileManipulator.cpp
 
 help.o: $(SRC)help.cpp $(SRC)help.hpp
