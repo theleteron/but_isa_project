@@ -29,6 +29,7 @@ $ ./popcl <server> [-p <port>] [-T|-S [-c <certfile>] [-C <certaddr>]] [-d] [-n]
 - `make`
 - `g++`
 - `openssl` library
+- `getopt` from `util-linux`
 ## Authfile syntax
 Authfile must be written in the following form to be accepted
 ```
