@@ -35,7 +35,7 @@ using namespace std;
 class ArgumentParser {
     private:
         string progname;    // Name of the program
-        uint flags = 0;     // Flags saved here using BITWISE operations
+        int flags = 0;     // Flags saved here using BITWISE operations
         string server;      // Domain name or IP -> <server>:<port>
         int port = 0;       // Port -> <server>:<port>
         string certfile;    // File containing certificates
