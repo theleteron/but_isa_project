@@ -53,6 +53,13 @@ password = your_pass
 │   ├── help.hpp
 │   ├── help.cpp
 │   └── returnCodes.hpp
+├── doc
+│   ├── src
+│   │   ├── img
+│   │   │   ├── logo_cz.png
+│   │   │   └── logo_en.png
+│   │   └── main.tex
+│   └── manual.pdf
 └── README.md
 ```
 ## Notes
