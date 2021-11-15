@@ -40,53 +40,222 @@
 \newpage
 
 \section{Introduction}
-
-
+\par
+This project and documentation focuses on the implementation of a simple mail client (for receive only) using Post Office Protocol v3 (POP3) as described by RFC1939 and its extension for TLS (POP3s, STARTTLS) specified by RFC2595.
 \newpage
 
+
 \subsection{Protocol POP3}
-TODO
+\par
+For communication with the server, POP3 uses reliable Transmission Control Protocol (TCP). The default port for POP3 is 110. 
+
+
+\par
+POP3 consist of 3 states:
+\begin{itemize}
+    \item Authorization state
+    \item Transaction state
+    \item Update state
+\end{itemize}
+\par
+The communication process is as follows. First, we establish the connection with the server, which puts us in an Authorization state and awaits login credentials. Second, after successful login, we get to the Transaction state, where it's possible to retrieve or delete messages from the server. And lastly, at the client's request, we move to the Update state where the changes are saved - delete marked messages.
+\par
+POP3 defines commands that the client can use at each state; every command has to be ended with \verb|\r\n|.
+
+
+\par
+Responses from the are either:
+\begin{itemize}
+    \item one-line response ended with \verb|\r\n|
+    \item multi-line response ended with \verb|\r\n.\r\n|
+\end{itemize}
+
+
 \subsubsection{Authorization state}
-TODO
+\par
+After a successful connection to the server - confirmed by message in \verb|+OK <msg>| format from the server, we are in Authorization state.
+The authorization state accepts the following commands \verb|USER|, \verb|PASS|, \verb|APOP|, and \verb|QUIT|.
 \subsubsection{Transaction state}
-TODO
+\par
+If the user successfully authorizes to the POP3 server, the connection moves to the transaction state. 
+
+
+\par
+Here, the following commands are available:
+\begin{itemize}
+    \item \verb|STAT| - gives information about the number of mails available and their size
+    \item \verb|LIST| <id>
+    \item \verb|RETR| <id> - returns message with given number to the client
+    \item \verb|DELE| <id> - marks message with given number for deletion
+    \item \verb|NOOP|
+    \item \verb|RSET| - removes deleted flag from any messages marked as deleted during the current session
+\end{itemize}
+Thanks to these, this state allows manipulation with the mailbox.
+
+
 \subsubsection{Update state}
-TODO
+\par
+This state is initiated by the client using the command \verb|QUIT|.
+\par
+
+
+\verb|QUIT| command logs out user and saves all changes made - marked as read, deleted messages.
 \subsubsection{Adding support for TLS}
-TODO
+\par
+POP3 is an unsecured protocol in its basic form - a third party can catch and read all client-server communication.
+The TLS extension for POP3 amends this.
+
+
+\par
+There are two options for this:
+\begin{itemize}
+    \item New port created only for secure communication using TLS (default is 995)
+    \item Additional command \verb|STLS| in Authorization state tells the server to initiate a secure connection on port 110.
+\end{itemize}
 
 \newpage
 
 \section{Implementation}
-TODO
+\par
+Language: \verb|C++|
+\newline
+Additional libraries:
+\begin{itemize}
+    \item \verb|openssl|
+    \item \verb|getopt| (included in \verb|util-linux|)
+\end{itemize}
+
+
 \subsection{Main}
-TODO
+\par
+The program starts by creating an instance of \verb|ArgumentParser| class in \verb|main.cpp|, which then uses the \verb|parse| method to process arguments specified by the user. 
+\par
+If arguments are parsed without problem, the program creates an instance of the \verb|POP3| class, which will act as a POP3 client and passes it instance of \verb|ArgumentParser| class using method \verb|passArgs|.
+After this, method \verb|run| of the \verb|POP3| class is called to start the client.
+
+
 \subsection{ArgumentParser class}
-TODO
+\par
+This class handles all of the argument processing - parsing and validation.
+\par
+The main method of this class is method \verb|parse|, which makes use of \verb|getopt| functionality to parse arguments. 
+\par
+Validation is handled in method \verb|validate|, which is called at the end of the \verb|parse| method. The \verb|validate| method does the basic checks to confirm that arguments make sense and loads credentials from the authorization file. 
+\par
+In case of any problems encountered in this class, error details are printed out on \verb|stderr|. The user is also informed on \verb|stdout| in case of problems with CAfile, CAdir, and an authfile.
+
+
 \subsection{POP3 class}
-TODO
+\par
+The main logic of the whole POP3 client is implemented in this \verb|POP3| class. We have a method run here which calls in order methods \verb|startConnection|, \verb|login|, \verb|retrieveAllMessages| and \verb|quit|.
+
+\subsubsection{startConnection()}
+\par
+Method \verb|startConnection| creates instance of \verb|Connection| class and then decides what type of connection should be created based on arguments.
+\begin{itemize}
+    \item \verb|openConnectionTLS| of Connection class is called in case that flag \verb|-T| is specified
+    \item \verb|openConnectionSTLS| in case of the flag \verb|-S|
+    \item \verb|openConnection| by default (no flags specified)
+\end{itemize}
+
+\subsubsection{login()}
+\par
+This method handles the Authorization state of the POP3. The user is informed in case of an invalid username or password.
+
+\subsubsection{retrieveAllMessages()}
+\par
+This method goes through all messages and calls method \verb|retrieveMessage| on them.
+If no flags are specified, this causes all messages to be downloaded; in the case of the \verb|-n| flag, only new messages are downloaded, and in the case of the \verb|-d| flag, downloaded messages are marked for deletion on the server. Saving of the messages to the file is handled by \verb|FileManipulator| class.
+
+\subsubsection{quit()}
+\par
+A simple method that sends the POP3 \verb|QUIT| command and then closes the connection.
+
 \subsection{Connection class}
-TODO
+\par
+Class responsible for communicating with the POP3 server. Communication is done through the \verb|BIO| object.
+\par
+This class contains methods for opening a connection to the server. There are methods for TLS connection, unsecured connection, an unsecured connection that will use STARTTLS to promote to secure one.
+There is also a method for closing said connections - freeing memory and destroying objects used for this communication.
+\par
+Two essential methods that allow the POP3 class to send commands to the server are \verb|read| and \verb|write|. These methods were taken from OpenSSL IBM documentation and are allowing us to send commands and read responses from the POP3 server
+
 \subsection{FileManipulator class}
-TODO
+\par
+There are two methods used for file manipulation.
+\par
+The first one, \verb|saveMessage| is responsible for saving messages to the file; this method checks if the file already exists - if the file already exists, it checks \verb|-n| flag to decide if the message should be saved again. The file name is requested from the second method of the \verb|FileManipulator| class - \verb|getMessageID|.
+\par
+Method \verb|getMessageID| attempts to get the value of \verb|Message-ID| from the message header. If the value is not found error message is printed out on \verb|stderr|. \textbf{This is a current major limitation of this client - it's not able to download messages that are missing-ID!}
 
 \newpage
 
 \section{How to use}
-TODO
-\subsection{Required arguments}
-TODO
-\subsection{Optional arguments}
-TODO
+\par
+To compile and run this program, you need the \verb|openssl| library, \verb|getopt| from \verb|util-linux|, \verb|g++| compiler, and \verb|make|.
+\par
+If you have all of the above, switch to the root project folder (the folder that contains \verb|Makefile| and \verb|main.cpp|), and you can run
+\par
+\verb|$ make|
+\par
+This will compile the program and makes it ready to run.
+Object files and a copy of the executable is saved in the \verb|build| directory.
+
+\subsection{Usage}
+\begin{verbatim}
+$ ./popcl <server> [-p <port>] [-T|-S [-c <certfile>] [-C <certaddr>]] 
+                   [-d] [-n] -a <auth_file> -o <out_dir>
+\end{verbatim}
+
+\subsubsection{Required arguments}
+\begin{itemize}
+    \item \verb|<server>| - POP3 server's domain name or IP
+    \item \verb|-a <auth_file>| - Authorization file - file containing username and password
+    \item \verb|-o <out_dir>| - Output directory - where the mails should be saved
+\end{itemize}
+\subsubsection{Optional arguments}
+\begin{itemize}
+    \item \verb|-p <port>| - Port over which we want to communicate with the POP3 server
+    \item \verb|-T| - Use secure connection from the start
+    \item \verb|-S| - Initiate unsecure connection and then use TLS to switch to secure one
+    \item \verb|-c <certfile>| - Path to the file that contains certificates
+    \item \verb|-C <certaddr>| - Path to the directory that contains certfiles
+    \item \verb|-d| - Delete downloaded messages
+    \item \verb|-n| - Download only new messages
+\end{itemize}
 
 \newpage
 
-\section{Conclusion}
-TODO
+\subsection{Source files for the project}
+\begin{verbatim}
+    main.cpp, 
+    pop3client/pop3.cpp, 
+    pop3client/argumentParser.hpp,
+    pop3client/argumentParser.cpp, 
+    pop3client/connection.hpp, 
+    pop3client/connection.cpp, 
+    pop3client/fileManipulator.hpp, 
+    pop3client/fileManipulator.cpp, 
+    pop3client/help.hpp, 
+    pop3client/help.cpp 
+    pop3client/returnCodes.hpp
+\end{verbatim}
 
 \newpage
 
 \section{Sources and literature}
-TODO
+\begin{verbatim}
+[2] “RFC1939.” Document Search and Retrieval Page, 
+    https://datatracker.ietf.org/doc/html/rfc1939. 
+[3] “RFC2595.” Document Search and Retrieval Page, 
+    https://datatracker.ietf.org/doc/html/rfc2595. 
+[4] “RFC5322.” Document Search and Retrieval Page, 
+    https://datatracker.ietf.org/doc/html/rfc5322. 
+[5] “Secure Programming with the Openssl API.” IBM Developer, 
+    https://developer.ibm.com/tutorials/l-openssl/. 
+\end{verbatim}
+%\nocite{*}
+%\bibliographystyle{alpha}
+%\bibliography{refs}
 
 \end{document}

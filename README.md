@@ -67,6 +67,7 @@ password = your_pass
 ## Known limitations & bugs
 - Program is unable to handle mail messages with attachements, it will start looping and has to be stopped using `Ctrl + C`
 - If program is not able to estabilish connection using custom port it will start looping and has to be stopped using `Ctrl + C`
+- During message download, client expects message to have `Message-ID`. If `Message-ID` is not present file is not saved and user is informed on `stderr`.
 
 ## Examples of program calls
 ### Download of all messages

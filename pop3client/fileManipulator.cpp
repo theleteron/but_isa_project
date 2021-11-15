@@ -28,7 +28,11 @@ bool FileManipulator::saveMessage(string message, bool onlyNew) {
         return false;
     }
     // Full message path
-    string path = outdir + "/" + getMessageID(message);
+    string MID = getMessageID(message);
+    if (MID.empty()) {
+        return false;
+    }
+    string path = outdir + "/" + MID;
 
     // Check if file already exists & continue or return based on the -n flag
     fstream stream;
