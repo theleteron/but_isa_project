@@ -64,6 +64,7 @@ password = your_pass
 ```
 ## Notes
 - Default ports are 110 (unsecured, STLS) & 995 (POP3s)
+- Final mark 7/20
 ## Known limitations & bugs
 - Program is unable to handle mail messages with attachements, it will start looping and has to be stopped using `Ctrl + C`
 - If program is not able to estabilish connection using custom port it will start looping and has to be stopped using `Ctrl + C`
